@@ -80,6 +80,49 @@
 
 
 
+    <LinearLayout
+        android:id="@+id/builtin_modpack_banner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/background_overlay"
+        android:padding="@dimen/padding_medium"
+        android:visibility="gone"
+        android:layout_marginTop="@dimen/_8sdp"
+        app:layout_constraintTop_toBottomOf="@+id/search_mod_overlay"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/builtin_modpack_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textSize="@dimen/_13ssp"
+                android:text="@string/builtin_modpack_title" />
+
+            <TextView
+                android:id="@+id/builtin_modpack_desc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="@dimen/_11ssp"
+                android:text="@string/builtin_modpack_desc" />
+        </LinearLayout>
+
+        <com.kdt.mcgui.MineButton
+            android:id="@+id/builtin_modpack_install"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="@string/builtin_modpack_install" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_mod_list"
         android:layout_width="match_parent"
@@ -88,7 +131,7 @@
         android:clipToPadding="false"
 
         app:layout_constraintBottom_toTopOf="@id/mineButton_import_local_modpack"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/builtin_modpack_banner"
         android:layout_marginBottom="@dimen/padding_moderate"
         />
 

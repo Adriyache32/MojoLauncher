@@ -101,14 +101,44 @@ public class JavaRunner {
         // Low-end device optimizations: aggressive GC to avoid OOM on 2GB devices
         boolean isLowEnd = LauncherPreferences.PREF_IS_LOW_END_DEVICE;
         if (isLowEnd) {
+            int ram = LauncherPreferences.PREF_RAM_ALLOCATION;
             // Use Serial GC (lowest memory overhead) for budget devices
             userArguments.add(0, "-XX:+UseSerialGC");
-            userArguments.add(0, "-XX:MaxHeapFreeRatio=30");
-            userArguments.add(0, "-XX:MinHeapFreeRatio=10");
+            userArguments.add(0, "-XX:MaxHeapFreeRatio=20");
+            userArguments.add(0, "-XX:MinHeapFreeRatio=5");
             userArguments.add(0, "-XX:+DisableExplicitGC");
             userArguments.add(0, "-XX:+TieredCompilation");
             userArguments.add(0, "-XX:TieredStopAtLevel=1"); // Skip C2 compiler, save RAM
             userArguments.add(0, "-Djava.awt.headless=true");
+
+            // --- MUCH MORE aggressive tuning for gama baja ---
+            userArguments.add(0, "-XX:+UnlockExperimentalVMOptions");
+            userArguments.add(0, "-XX:+UseCompressedOops");        // smaller pointers, less RAM
+            userArguments.add(0, "-XX:CICompilerCount=1");          // single compiler thread
+            userArguments.add(0, "-XX:ParallelGCThreads=1");        // 1 GC thread
+            userArguments.add(0, "-XX:ConcGCThreads=1");
+            userArguments.add(0, "-XX:SoftRefLRUPolicyMSPerMB=0");  // reclaim soft refs ASAP
+            userArguments.add(0, "-XX:ReservedCodeCacheSize=32m");  // cap JIT code cache
+            userArguments.add(0, "-XX:MaxMetaspaceSize=128m");      // cap metaspace
+            userArguments.add(0, "-XX:InitialCodeCacheSize=8m");
+            userArguments.add(0, "-Xss512k");                       // tiny thread stacks
+            userArguments.add(0, "-XX:+UseGCOverheadLimit");
+            userArguments.add(0, "-XX:GCTimeRatio=99");             // favor throughput
+            userArguments.add(0, "-XX:-DontCompileHugeMethods");
+            userArguments.add(0, "-Djava.util.concurrent.ForkJoinPool.common.parallelism=1");
+            userArguments.add(0, "-Dforge.logging.markers=");       // cut Forge log spam
+            userArguments.add(0, "-Dminecraft.launcher.brand=MojoLauncher");
+
+            // Ultra mode: sub-1GB devices get even harsher caps
+            if (ram <= 1024) {
+                userArguments.add(0, "-XX:MaxMetaspaceSize=80m");
+                userArguments.add(0, "-XX:ReservedCodeCacheSize=24m");
+                userArguments.add(0, "-XX:MaxDirectMemorySize=64m");
+            }
+        } else {
+            // Light, safe tuning for all non-low-end devices too
+            userArguments.add(0, "-XX:+UseCompressedOops");
+            userArguments.add(0, "-XX:SoftRefLRUPolicyMSPerMB=2500");
         }
 
         ArrayList<String> overridableArguments = new ArrayList<>(Arrays.asList(
@@ -289,7 +319,12 @@ public class JavaRunner {
         runtimeArgs.addAll(getJavaArgs(runtimeHomeDir.getAbsolutePath(), vmArgs));
 
 
-        runtimeArgs.add("-XX:ActiveProcessorCount=" + java.lang.Runtime.getRuntime().availableProcessors());
+        int processorCount = java.lang.Runtime.getRuntime().availableProcessors();
+        if (LauncherPreferences.PREF_IS_LOW_END_DEVICE) {
+            // Cap to 2 cores on budget devices to reduce thread contention and RAM use
+            processorCount = Math.min(processorCount, 2);
+        }
+        runtimeArgs.add("-XX:ActiveProcessorCount=" + processorCount);
         addx86SignalWorkaround(runtimeArgs);
         StringBuilder classpathBuilder = new StringBuilder().append("-Djava.class.path=");
         boolean first = true;

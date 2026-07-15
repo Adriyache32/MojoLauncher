@@ -39,26 +39,59 @@
 | Renderizado Vulkan (Zink) | ✅ |
 | Cuentas Mojang / Microsoft | ✅ |
 
-## 🚀 Optimizaciones de este fork
-
-Este fork incluye mejoras específicas para dispositivos de gama baja:
-
-- **Asignación de RAM agresiva**: Reduce el heap para dispositivos con 2GB o menos
-- **Serial GC**: Reemplaza G1 GC para menor uso de memoria
-- **TieredCompilation nivel 1**: Salta el compilador C2, ahorra RAM
-- **Headless mode**: Para dispositivos con muy poca memoria
-- **Auto-detección de dispositivos low-end** vía `PREF_IS_LOW_END_DEVICE`
-
-### Configuración de RAM por dispositivo
-
-| RAM del dispositivo | RAM asignada (antes → ahora) |
-|---------------------|------------------------------|
-| < 512 MB | 296 → **196 MB** |
-| 512-768 MB | 296 → **256 MB** |
-| 768MB-1GB | 296 → **320 MB** |
-| 1.5GB-2GB | 656 → **600 MB** |
-| 2GB-3GB | 936 → **896 MB** |
-
+ ## 🚀 Optimizaciones de este fork
+ 
+ Este fork incluye mejoras específicas para dispositivos de gama baja:
+ 
+ - **Asignación de RAM agresiva**: Reduce el heap para dispositivos con 2GB o menos
+ - **Serial GC**: Reemplaza G1 GC para menor uso de memoria
+ - **TieredCompilation nivel 1**: Salta el compilador C2, ahorra RAM
+ - **Headless mode**: Para dispositivos con muy poca memoria
+ - **Auto-detección de dispositivos low-end** vía `PREF_IS_LOW_END_DEVICE`
+ 
+ ### ⚡ Tuning JVM "mucho MUCHO" (modo gama baja)
+ 
+ Cuando el dispositivo es detectado como low-end (`PREF_IS_LOW_END_DEVICE`), MojoLauncher
+ aplica un conjunto **mucho más agresivo** de flags JVM sobre el PojavLauncher original:
+ 
+ | Flag | Efecto |
+ |------|--------|
+ | `-XX:+UseSerialGC` | GC de menor overhead de memoria |
+ | `-XX:ParallelGCThreads=1` / `-XX:ConcGCThreads=1` | 1 solo hilo de GC |
+ | `-XX:CICompilerCount=1` | 1 hilo de compilador JIT |
+ | `-XX:TieredStopAtLevel=1` | Salta C2, ahorra RAM de código |
+ | `-XX:ReservedCodeCacheSize=32m` | Cache de código JIT limitado |
+ | `-XX:MaxMetaspaceSize=128m` | Metaspace limitado |
+ | `-Xss512k` | Stacks de hilo diminutos |
+ | `-XX:SoftRefLRUPolicyMSPerMB=0` | Reclama refs blandas ya |
+ | `-XX:GCTimeRatio=99` | Prioriza throughput |
+ | `-Djava.util.concurrent.ForkJoinPool.common.parallelism=1` | Sin paralelismo extra |
+ | `-XX:ActiveProcessorCount` cap a 2 | Menos contención de hilos |
+ | **Modo ULTRA** (≤1GB RAM) | Metaspace 80m, codecache 24m, direct memory 64m |
+ 
+ ### Configuración de RAM por dispositivo
+ 
+ | RAM del dispositivo | RAM asignada (antes → ahora) |
+ |---------------------|------------------------------|
+ | < 512 MB | 296 → **196 MB** |
+ | 512-768 MB | 296 → **256 MB** |
+ | 768MB-1GB | 296 → **320 MB** |
+ | 1.5GB-2GB | 656 → **600 MB** |
+ | 2GB-3GB | 936 → **896 MB** |
+ 
+ ## 📦 Modpacks integrados (built-in)
+ 
+ MojoLauncher trae **modpacks recomendados predeterminados** para versiones populares.
+ Al buscar modpacks con la versión de Minecraft seleccionada, aparece un banner con
+ instalación en 1 toque (se descarga desde Modrinth automáticamente).
+ 
+ | Versión de MC | Modpack predeterminado | Loader |
+ |---------------|-------------------------|--------|
+ | **1.20.1** | **Keo Optimized** | Fabric |
+ | **26.1.2** | **Simply Optimized Reloaded** | NeoForge |
+ 
+ Implementado en `net.kdt.pojavlaunch.modloaders.modpacks.BuiltInModpacks`.
+ 
 ## 📥 Instalación
 
 ### Desde Releases

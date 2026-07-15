@@ -33,6 +33,7 @@ import net.kdt.pojavlaunch.PojavApplication;
 import net.kdt.pojavlaunch.Tools;
 import net.kdt.pojavlaunch.modloaders.modpacks.ModItemAdapter;
 import net.kdt.pojavlaunch.modloaders.modpacks.api.CommonApi;
+import net.kdt.pojavlaunch.modloaders.modpacks.BuiltInModpacks;
 import net.kdt.pojavlaunch.modloaders.modpacks.api.ModpackApi;
 import net.kdt.pojavlaunch.modloaders.modpacks.models.SearchFilters;
 import net.kdt.pojavlaunch.profiles.VersionSelectorDialog;
@@ -74,6 +75,11 @@ public class SearchModFragment extends Fragment implements ModItemAdapter.Search
 
     private Button mImportButton;
     private TaskCountListener mTaskCountListener;
+
+    private android.widget.LinearLayout mBuiltInBanner;
+    private TextView mBuiltInTitle;
+    private TextView mBuiltInDesc;
+    private Button mBuiltInInstall;
 
     ActivityResultLauncher<String> mImportLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(),
             uri -> {
@@ -167,7 +173,52 @@ public class SearchModFragment extends Fragment implements ModItemAdapter.Search
         };
         ProgressKeeper.addTaskCountListener(mTaskCountListener);
 
+        // Built-in recommended modpack banner
+        mBuiltInBanner = view.findViewById(R.id.builtin_modpack_banner);
+        mBuiltInTitle = view.findViewById(R.id.builtin_modpack_title);
+        mBuiltInDesc = view.findViewById(R.id.builtin_modpack_desc);
+        mBuiltInInstall = view.findViewById(R.id.builtin_modpack_install);
+        mBuiltInInstall.setOnClickListener(v -> installBuiltInModpack());
+        updateBuiltInBanner();
+
         searchMods(null);
+    }
+
+    private void updateBuiltInBanner() {
+        BuiltInModpacks.BuiltInModpack modpack = BuiltInModpacks.getForVersion(mSearchFilters.mcVersion);
+        if (modpack == null) {
+            mBuiltInBanner.setVisibility(View.GONE);
+            return;
+        }
+        mBuiltInTitle.setText(modpack.name + " (" + modpack.loader + ")");
+        mBuiltInDesc.setText(modpack.description);
+        mBuiltInBanner.setVisibility(View.VISIBLE);
+    }
+
+    private void installBuiltInModpack() {
+        final String version = mSearchFilters.mcVersion;
+        BuiltInModpacks.BuiltInModpack modpack = BuiltInModpacks.getForVersion(version);
+        if (modpack == null) return;
+        mBuiltInInstall.setEnabled(false);
+        mBuiltInInstall.setText(R.string.builtin_modpack_installing);
+        PojavApplication.sExecutorService.execute(() -> {
+            try {
+                BuiltInModpacks.install(modpack);
+            } catch (Exception e) {
+                    Tools.showErrorRemote("BuiltInModpack", e);
+                runOnUiThread(() -> {
+                    mBuiltInInstall.setEnabled(true);
+                    mBuiltInInstall.setText(R.string.builtin_modpack_install);
+                    if (getContext() != null)
+                        android.widget.Toast.makeText(getContext(), R.string.builtin_modpack_unavailable, android.widget.Toast.LENGTH_LONG).show();
+                });
+            } finally {
+                runOnUiThread(() -> {
+                    mBuiltInInstall.setEnabled(true);
+                    mBuiltInInstall.setText(R.string.builtin_modpack_install);
+                });
+            }
+        });
     }
 
     @Override
@@ -231,6 +282,7 @@ public class SearchModFragment extends Fragment implements ModItemAdapter.Search
             mApplyButton.setOnClickListener(v -> {
                 mSearchFilters.mcVersion = mSelectedVersion.getText().toString();
                 searchMods(mSearchEditText.getText().toString());
+                updateBuiltInBanner();
                 dialogInterface.dismiss();
             });
         });
