@@ -98,6 +98,19 @@ public class JavaRunner {
         userArguments.add(0, "-Xms"+LauncherPreferences.PREF_RAM_ALLOCATION+"M");
         userArguments.add(0, "-Xmx"+LauncherPreferences.PREF_RAM_ALLOCATION+"M");
 
+        // Low-end device optimizations: aggressive GC to avoid OOM on 2GB devices
+        boolean isLowEnd = LauncherPreferences.PREF_IS_LOW_END_DEVICE;
+        if (isLowEnd) {
+            // Use Serial GC (lowest memory overhead) for budget devices
+            userArguments.add(0, "-XX:+UseSerialGC");
+            userArguments.add(0, "-XX:MaxHeapFreeRatio=30");
+            userArguments.add(0, "-XX:MinHeapFreeRatio=10");
+            userArguments.add(0, "-XX:+DisableExplicitGC");
+            userArguments.add(0, "-XX:+TieredCompilation");
+            userArguments.add(0, "-XX:TieredStopAtLevel=1"); // Skip C2 compiler, save RAM
+            userArguments.add(0, "-Djava.awt.headless=true");
+        }
+
         ArrayList<String> overridableArguments = new ArrayList<>(Arrays.asList(
                 "-Djava.home=" + runtimeHome,
                 "-Djava.io.tmpdir=" + Tools.DIR_CACHE.getAbsolutePath(),

@@ -40,6 +40,7 @@ public class LauncherPreferences {
     public static float PREF_MOUSESPEED = 1f;
     public static int PREF_RAM_ALLOCATION;
     public static String PREF_DEFAULT_RUNTIME;
+    public static boolean PREF_IS_LOW_END_DEVICE = false; // 2GB RAM or below, optimized for budget phones
     public static boolean PREF_SUSTAINED_PERFORMANCE = false;
     public static boolean PREF_VIRTUAL_MOUSE_START = false;
     public static boolean PREF_USE_ALTERNATE_SURFACE = true;
@@ -94,6 +95,7 @@ public class LauncherPreferences {
         PREF_DISABLE_GESTURES = DEFAULT_PREF.getBoolean("disableGestures",false);
         PREF_DISABLE_SWAP_HAND = DEFAULT_PREF.getBoolean("disableDoubleTap", false);
         PREF_RAM_ALLOCATION = DEFAULT_PREF.getInt("allocation", findBestRAMAllocation(ctx));
+        PREF_IS_LOW_END_DEVICE = Tools.getTotalDeviceMemory(ctx) <= 2048;
         PREF_CUSTOM_JAVA_ARGS = DEFAULT_PREF.getString("javaArgs", "");
         PREF_SUSTAINED_PERFORMANCE = DEFAULT_PREF.getBoolean("sustainedPerformance", isDevicePowerful);
         PREF_VIRTUAL_MOUSE_START = DEFAULT_PREF.getBoolean("mouse_start", false);
@@ -156,14 +158,17 @@ public class LauncherPreferences {
      */
     private static int findBestRAMAllocation(Context ctx){
         int deviceRam = Tools.getTotalDeviceMemory(ctx);
-        if (deviceRam < 1024) return 296;
-        if (deviceRam < 1536) return 448;
-        if (deviceRam < 2048) return 656;
+        // Ultra-low-end optimization (2GB RAM and below)
+        if (deviceRam < 512) return 196;   // 256MB-512MB devices: minimal allocation
+        if (deviceRam < 768) return 256;   // 512MB-768MB devices
+        if (deviceRam < 1024) return 320;  // 768MB-1GB devices
+        if (deviceRam < 1536) return 448;  // 1GB-1.5GB devices
+        if (deviceRam < 2048) return 600;  // 1.5GB-2GB devices: optimized for budget phones
         // Limit the max for 32 bits devices more harshly
-        if (is32BitsDevice()) return 696;
+        if (is32BitsDevice()) return 680;
 
-        if (deviceRam < 3064) return 936;
-        if (deviceRam < 4096) return 1144;
+        if (deviceRam < 3064) return 896;
+        if (deviceRam < 4096) return 1104;
         if (deviceRam < 6144) return 1536;
         return 2048; //Default RAM allocation for 64 bits
     }
