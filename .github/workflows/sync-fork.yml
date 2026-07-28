@@ -5,22 +5,25 @@ on:
     - cron: '0 * * * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: v3_openjdk
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Sync upstream
+      - name: Sync via GitHub API
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          UPSTREAM_REPO: MojoLauncher/MojoLauncher
+          UPSTREAM_BRANCH: v3_openjdk
         run: |
-          git remote add upstream https://github.com/MojoLauncher/MojoLauncher.git
-          git fetch upstream
-          git merge upstream/v3_openjdk --no-edit || echo "Already up to date"
-
-      - name: Push
-        run: git push origin v3_openjdk
+          git clone --bare "https://x-access-token:${GH_TOKEN}@github.com/${UPSTREAM_REPO}.git" upstream.git
+          git clone --bare "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" fork.git
+          
+          cd fork.git
+          git fetch ../upstream.git ${UPSTREAM_BRANCH}:${UPSTREAM_BRANCH} --force
+          git update-ref "refs/heads/${UPSTREAM_BRANCH}" "FETCH_HEAD"
+          git push origin ${UPSTREAM_BRANCH}
+          
+          echo "✅ Synced with upstream"
