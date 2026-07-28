@@ -1,5 +1,4 @@
 name: Sync Fork
-
 on:
   schedule:
     - cron: '0 * * * *'
@@ -9,10 +8,17 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync fork with upstream
-        uses: repo-sync/github-sync@v2
+      - uses: actions/checkout@v4
         with:
-          source_repo: "MojoLauncher/MojoLauncher"
-          source_branch: "v3_openjdk"
-          destination_branch: "v3_openjdk"
-          github_token: ${{ secrets.PAT_TOKEN }}
+          ref: v3_openjdk
+          fetch-depth: 0
+          token: ${{ secrets.PAT_TOKEN }}
+      - name: Sync
+        run: |
+          git remote add upstream https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/MojoLauncher/MojoLauncher.git
+          git fetch upstream v3_openjdk
+          git config user.name "bot"
+          git config user.email "bot@adriyache32.github.io"
+          git merge upstream/v3_openjdk --no-edit
+          git push origin v3_openjdk
+          echo "✅ Synced"
