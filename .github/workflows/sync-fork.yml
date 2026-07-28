@@ -9,10 +9,18 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync fork with upstream
-        uses: repo-sync/github-sync@v2
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          source_repo: "MojoLauncher/MojoLauncher"
-          source_branch: "v3_openjdk"
-          destination_branch: "v3_openjdk"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          ref: v3_openjdk
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync upstream
+        run: |
+          git remote add upstream https://github.com/MojoLauncher/MojoLauncher.git
+          git fetch upstream
+          git merge upstream/v3_openjdk --no-edit || echo "Already up to date"
+
+      - name: Push
+        run: git push origin v3_openjdk
