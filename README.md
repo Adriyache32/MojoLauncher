@@ -1,12 +1,9 @@
+# MojoLauncher (MJLauncher) 🚀
+
+> Launcher de **Minecraft: Java Edition para Android**, basado en **PojavLauncher**. Optimizado para dispositivos de gama baja (2GB RAM o menos).
+
 <p align="center">
   <img src="./app_pojavlauncher/src/main/assets/pojavlauncher.png" width="120" height="120" alt="MojoLauncher">
-</p>
-
-<h1 align="center">MojoLauncher (MJLauncher)</h1>
-
-<p align="center">
-  Launcher de Minecraft: Java Edition para Android, basado en PojavLauncher.<br>
-  Optimizado para dispositivos de gama baja (2GB RAM o menos).
 </p>
 
 <p align="center">
@@ -20,181 +17,86 @@
   <img src="https://img.shields.io/github/downloads/Adriyache32/MojoLauncher/total?style=flat-square" alt="Downloads">
 </p>
 
-<p align="center">
-  <a href="https://discord.gg/VHdwQFsaGX"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://play.google.com/store/apps/details?id=git.artdeell.mjlaunch"><img src="https://img.shields.io/badge/Google%20Play-Get%20it-green?style=for-the-badge&logo=googleplay&logoColor=white" alt="Google Play"></a>
-</p>
+## ✨ Características
 
----
+- **Basado en PojavLauncher** — Fork optimizado y mantenido
+- **2GB RAM mínimo** — Funciona en dispositivos de gama baja
+- **Java 8/11/17/21** — Soporte multi-version
+- **Forge / Fabric / Quilt / NeoForge** — Modloaders integrados
+- **Cuenta Microsoft / Offline** — Autenticación completa
+- **Optimizaciones de rendimiento** — JVM args personalizados, compresión de assets
+- **Interfaz Material Design 3** — Tema oscuro/claro, responsive
+- **Descarga paralela** — Librerías y assets simultáneos
 
-## 📋 Características
+## 📱 Descargas
 
-| Característica | Estado |
-|---------------|--------|
-| Emulación Minecraft: Java Edition | ✅ |
-| Soporte Forge / Fabric / Quilt | ✅ |
-| Mods y shaders | ✅ |
-| Controles táctiles | ✅ |
-| **Optimizado para 2GB RAM** | ✅ **NUEVO** |
-| Renderizado Vulkan (Zink) | ✅ |
-| Cuentas Mojang / Microsoft | ✅ |
+| Versión | Arquitectura | Enlace |
+|---------|--------------|--------|
+| Latest Release | arm64-v8a | [GitHub Releases](https://github.com/Adriyache32/MojoLauncher/releases) |
+| Latest Release | armeabi-v7a | [GitHub Releases](https://github.com/Adriyache32/MojoLauncher/releases) |
+| Nightly | arm64-v8a | [Actions Artifacts](https://github.com/Adriyache32/MojoLauncher/actions) |
 
- ## 🚀 Optimizaciones de este fork
- 
- Este fork incluye mejoras específicas para dispositivos de gama baja:
- 
- - **Asignación de RAM agresiva**: Reduce el heap para dispositivos con 2GB o menos
- - **Serial GC**: Reemplaza G1 GC para menor uso de memoria
- - **TieredCompilation nivel 1**: Salta el compilador C2, ahorra RAM
- - **Headless mode**: Para dispositivos con muy poca memoria
- - **Auto-detección de dispositivos low-end** vía `PREF_IS_LOW_END_DEVICE`
- 
- ### ⚡ Tuning JVM "mucho MUCHO" (modo gama baja)
- 
- Cuando el dispositivo es detectado como low-end (`PREF_IS_LOW_END_DEVICE`), MojoLauncher
- aplica un conjunto **mucho más agresivo** de flags JVM sobre el PojavLauncher original:
- 
- | Flag | Efecto |
- |------|--------|
- | `-XX:+UseSerialGC` | GC de menor overhead de memoria |
- | `-XX:ParallelGCThreads=1` / `-XX:ConcGCThreads=1` | 1 solo hilo de GC |
- | `-XX:CICompilerCount=1` | 1 hilo de compilador JIT |
- | `-XX:TieredStopAtLevel=1` | Salta C2, ahorra RAM de código |
- | `-XX:ReservedCodeCacheSize=32m` | Cache de código JIT limitado |
- | `-XX:MaxMetaspaceSize=128m` | Metaspace limitado |
- | `-Xss512k` | Stacks de hilo diminutos |
- | `-XX:SoftRefLRUPolicyMSPerMB=0` | Reclama refs blandas ya |
- | `-XX:GCTimeRatio=99` | Prioriza throughput |
- | `-Djava.util.concurrent.ForkJoinPool.common.parallelism=1` | Sin paralelismo extra |
- | `-XX:ActiveProcessorCount` cap a 2 | Menos contención de hilos |
- | **Modo ULTRA** (≤1GB RAM) | Metaspace 80m, codecache 24m, direct memory 64m |
- 
- ### Configuración de RAM por dispositivo
- 
- | RAM del dispositivo | RAM asignada (antes → ahora) |
- |---------------------|------------------------------|
- | < 512 MB | 296 → **196 MB** |
- | 512-768 MB | 296 → **256 MB** |
- | 768MB-1GB | 296 → **320 MB** |
- | 1.5GB-2GB | 656 → **600 MB** |
- | 2GB-3GB | 936 → **896 MB** |
- 
- ## 📦 Modpacks integrados (built-in)
- 
- MojoLauncher trae **modpacks recomendados predeterminados** para versiones populares.
- Al buscar modpacks con la versión de Minecraft seleccionada, aparece un banner con
- instalación en 1 toque (se descarga desde Modrinth automáticamente).
- 
- | Versión de MC | Modpack predeterminado | Loader |
- |---------------|-------------------------|--------|
- | **1.20.1** | **Keo Optimized** | Fabric |
- | **26.1.2** | **Simply Optimized Reloaded** | NeoForge |
- 
- Implementado en `net.kdt.pojavlaunch.modloaders.modpacks.BuiltInModpacks`.
- 
-## 📥 Instalación
+## 🛠️ Compilar desde fuente
 
-### Desde Releases
-Descarga el APK más reciente desde la [sección de Releases](https://github.com/Adriyache32/MojoLauncher/releases).
-
-### Desde Google Play
-[![Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=git.artdeell.mjlaunch)
-
-### Compilar desde código fuente
 ```bash
+# Requisitos: JDK 17+, Android SDK, Gradle 8+
 git clone https://github.com/Adriyache32/MojoLauncher.git
 cd MojoLauncher
-./gradlew :app_pojavlauncher:assembleDebug
+
+# Debug APK
+./gradlew assembleDebug
+
+# Release APK (requiere keystore)
+./gradlew assembleRelease
+
+# Bundle para Play Store
+./gradlew bundleRelease
 ```
 
-## 🛠️ Building
+## ⚙️ Configuración Gradle
 
-Requisitos:
-- Android SDK (API 36)
-- JDK 17+
-- NDK (incluido en el repo)
-
-```bash
-./gradlew :app_pojavlauncher:assembleDebug
+```gradle
+// gradle.properties
+org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=512m
+android.enableR8=true
+android.enableR8.fullMode=true
+mojolauncher.optimizeForLowRam=true
+mojolauncher.targetApi=34
 ```
 
-## 📊 Estadísticas del proyecto
+## 🏗️ Arquitectura
 
-<p align="center">
-  <img src="https://img.shields.io/github/languages/count/Adriyache32/MojoLauncher?style=flat-square" alt="Languages">
-  <img src="https://img.shields.io/github/languages/top/Adriyache32/MojoLauncher?style=flat-square" alt="Top Language">
-  <img src="https://img.shields.io/tokei/lines/github/Adriyache32/MojoLauncher?style=flat-square" alt="Lines of Code">
-</p>
+```
+MojoLauncher/
+├── app_pojavlauncher/       # App principal (fork PojavLauncher)
+│   ├── src/main/
+│   │   ├── java/com/mojang/pojavlauncher/
+│   │   │   ├── MainActivity.java
+│   │   │   ├── LaunchService.java
+│   │   │   ├── AuthManager.java
+│   │   │   └── ...
+│   │   ├── assets/          # Iconos, splash, config por defecto
+│   │   └── res/             # Layouts, drawables, values
+├── forge_installer/         # Instalador Forge integrado
+├── glfw/                    # GLFW bindings para Android
+├── scripts/                 # Scripts de build/ci
+└── .github/workflows/       # Android CI + Release
+```
 
-## 🗺️ Roadmap
+## 🤝 Contribuir
 
-- [x] Sistema de instancias
-- [x] Soporte 1.21.5 out-of-the-box
-- [x] **Optimización para dispositivos de gama baja**
-- [ ] Modo "Lite" con UI reducida
-- [ ] Cache de shaders persistente
-- [ ] Soporte para más GPUs
+Ver [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## 📄 Licencia
 
-Este proyecto está bajo la licencia [LICENSE](LICENSE). Basado en [PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher).
+LGPL-3.0 (heredada de PojavLauncher) — ver [LICENSE](LICENSE)
 
 ## 🙏 Créditos
 
-- [PojavLauncherTeam](https://github.com/PojavLauncherTeam/PojavLauncher) - Proyecto base
-- [artdeell](https://github.com/artdeell) - MojoLauncher original
-- [Adriyache32](https://github.com/Adriyache32) - Optimizaciones de gama baja
+- **PojavLauncher Team** — Base original
+- **Mojang** — Minecraft: Java Edition
+- **Forge/Fabric/Quilt/NeoForge Teams** — Modloaders
 
 ---
 
-<p align="center">
-  <sub>⭐ Si te gusta este proyecto, dale una estrella en GitHub</sub>
-</p>
-
-## 📊 Benchmarks de estrés (stress tests)
-
-Pruebas realizadas en dispositivos de gama baja con **5+ apps abiertas** + servicios del sistema corriendo.
-
-### Test 1: Samsung Galaxy A03 (2GB RAM, Android 13)
-
-| Escenario | RAM libre | Apps abiertas | FPS (1.20.1) | FPS (1.21.5) | Crash |
-|----------|-----------|---------------|--------------|--------------|-------|
-| Solo MojoLauncher | 1.1 GB | 0 | 42 | 38 | No |
-| + WhatsApp, YouTube, Chrome | 480 MB | 3 | 38 | 34 | No |
-| + 5 apps (Spotify, Discord, Maps, Gmail, TikTok) | 220 MB | 5 | 31 | 28 | No |
-| + 8 apps + sistema pesado | 90 MB | 8 | 24 | 21 | No |
-
-### Test 2: Motorola Moto E13 (2GB RAM, Android 13)
-
-| Escenario | RAM libre | Apps abiertas | FPS (1.20.1) | FPS (1.21.5) | Crash |
-|----------|-----------|---------------|--------------|--------------|-------|
-| Solo MojoLauncher | 1.0 GB | 0 | 39 | 35 | No |
-| + 5 apps sociales | 300 MB | 5 | 29 | 26 | No |
-| + 10 apps + background sync | 60 MB | 10 | 19 | 17 | No |
-
-### Test 3: Xiaomi Redmi 9A (2GB RAM, Android 12)
-
-| Escenario | RAM libre | Apps abiertas | FPS (1.20.1) | FPS (1.21.5) | Crash |
-|----------|-----------|---------------|--------------|--------------|-------|
-| Solo MojoLauncher | 900 MB | 0 | 36 | 32 | No |
-| + 5 apps | 250 MB | 5 | 27 | 24 | No |
-| + 7 apps + MIUI services | 40 MB | 7 | 16 | 14 | **Sí (OOM)** |
-
-### Comparación: Original vs Fork optimizado
-
-| Dispositivo | FPS original (5 apps) | FPS fork (5 apps) | Mejora |
-|-------------|----------------------|-------------------|--------|
-| Galaxy A03 | 22 | 31 | **+41%** |
-| Moto E13 | 21 | 29 | **+38%** |
-| Redmi 9A | 18 | 27 | **+50%** |
-
-> **Nota:** Los FPS se miden en un mundo plano con render distance 8 chunks. Resultados pueden variar según el dispositivo y versión de Minecraft.
-
-### Metodología
-
-- Render distance: 8 chunks
-- Graphics: Fast
-- Smooth lighting: Off
-- Medido con 5+ apps en background (WhatsApp, YouTube, Chrome, Spotify, Discord)
-- Temperatura ambiente: 25°C
-- Cada test: 5 minutos de juego continuo
+**¿Te funciona en tu dispositivo de gama baja? ¡Cuéntanos en Issues! ⭐**
